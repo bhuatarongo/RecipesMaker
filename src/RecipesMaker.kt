@@ -1,12 +1,12 @@
+import model.Ingredient
+import model.Recipe
 
 // Recipes Maker
-var recetas:MutableList<String> = mutableListOf<String>()
-var ingredientes:MutableList<String> = mutableListOf("Agua","Leche","Carne","Verduras","Frutas","Cereal","Huevos","Aceite")
-
-
 
 fun main() {
-    exit@ while (true){
+    var recipes:MutableList<Recipe> = mutableListOf()
+
+    menu@ while (true){
         var mensaje_inicio = """
             :: Bienvenido a Recipe Maker::
             
@@ -15,63 +15,164 @@ fun main() {
             2. Ver mis recetas
             3. Salir
         """.trimIndent()
-
+2
         println(mensaje_inicio)
+
+        var response:String = readLine()?:"" //Operador elvis, "" por default
+
+        when(response){
+            "1" -> recipes.add(makeRecipe())
+            "2" -> viewRecipe(recipes)
+            "3" -> break@menu
+
+            else -> println("\nRespuesta erronea, por favor vuelva a intentarlo\n\n")
+        }
+    }
+    println("..Saliendo de RecipeMaker")
+}
+
+
+
+// ::::::::::::::::::: Ingredientes :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+fun selectIngredients():List<Ingredient>{
+    var selectIngredients:MutableList<Ingredient> = mutableListOf()
+    menu@while (true){
+        val msjCategoria = """
+               Ingresa ingredientes para tu receta:
+               Selecciona una categoría
+               1. Agua
+               2. Lácteos
+               3. Carnes, Legumbres y huevos
+               4. Verduras
+               5. Frutas
+               6. Granos
+               7. Aceites
+              
+                 ...pulsa enter para salir
+             """.trimIndent()
+        println(msjCategoria)
+
+        val response:String = readLine()?:""
+        if (response.isEmpty()){break@menu}
+
         try {
-
-            var response= readLine()?.toInt()?:0
-            if (response==4){
-                println("Por favor ingrese un dato!!")
-                continue@exit
+            val category = response.toInt()
+            when(category){
+                in 1..7 -> selectIngredients.add(getIngredient(category))
+                else -> println("\nRespuesta erronea, vuelve a intentarlo\n\n")
             }
-                if (response==1){
-                    makeRecipe()
-                }
-                if (response==2){
-                        viewRecipe()
-                }
-                if (response==3){
-                    break@exit
-                }
-        }catch (e:NumberFormatException){
-                println("----> Por favor ingrese un dato valido\n")
+        }catch (e: Exception){
+            println("\nIngrese un numero del 1 al 7 por favor, vuelve a intentarlo.\n\n")
         }
 
     }
+    return selectIngredients
 }
 
-fun makeRecipe(){
+fun getIngredient(category:Int): Ingredient {
+    var ingredient:String=openList(getCategory(category))
+
+    println("Escriba la unidad de medida: ")
+    val unidad:String = readLine()?:""
+
+    while (true){
+        println("Escriba la cantidad como número: ")
+        val cantidad= readLine()?:""
+
+        try {
+            val cant = cantidad.toDouble()
+            return Ingredient(ingredient,cant,unidad)
+        }catch (e:Exception){
+            println("Cantidad errónea")
+        }
+    }
+
+
+}
+
+fun getCategory(category:Int):List<String>{
+    when(category){
+        1 -> return listOf ("Agua Hirviendo","Agua Natural","Agua Hervida")  //Agua
+        2 -> return listOf ("Queso Panela","Leche","Yogurth","Queso Parmesano", "Queso Gouda")//Lacteos
+        3 -> return listOf ("Res","Pollo","Pescado","Jamón","Salchicha","Chorizo")  //Carnes
+        4 -> return listOf ("Lechuga","Tomate","Pepino","Limón","Zanahoria","Pimiento") //Verduras
+        5 -> return listOf ("Fresa","Plátano","Uvas","Manzana","Naranja","Pera","Cereza") // Frutas
+        6 -> return listOf ("Avena","Trigo","Arroz","Maiz")  //Granos
+        7 -> return listOf ("Aceite de Oliva","Aceite de Cocina","Chimichurri") //Aceites
+        else -> return listOf("")
+    }
+}
+
+fun openList(list:List<String>):String{
+    while (true){
+        println("Elige un ingrediente:")
+
+        for ((index,item) in list.withIndex()){
+            println("${index+1} .- $item")
+        }
+
+        val ingrediente:String = readLine()?:""
+
+        try {
+            val opc = ingrediente.toInt()
+            //si esta entre 1 y el tamaño devuelve item, si no repite
+            if(opc in 1..list.size){
+                return list.elementAt((opc-1))
+            }else{
+                println("Respuesta erronea, vuelve a intentarlo\n")
+            }
+        }catch (e:Exception){
+            println("Respuesta erronea, por favor vuelve a intentarlo\n")
+        }
+    }
+}
+
+// :::::::::::::::::::.: Receta :::::::::::::::::::::::::
+
+fun makeRecipe():Recipe{
     println("Por favor ingrese el nombre de receta")
-    val nombre_receta:String?= readLine()?.toString()?:"Sin_nombre"
-    println("Selecciona los ingredientes:")
-    for ((index,ingredient) in ingredientes.withIndex()){
-        println("${index+1}.-${ingredient}")
+    var nombre_receta:String= readLine()?.toString()?:"Sin_nombre"
+    if(nombre_receta.isEmpty()){
+        nombre_receta = "Receta sin nombre"
     }
-    println("\n 0.-Guardar receta\n -1.-Salir ")
-    var receta_nueva:String = nombre_receta + ": "
 
-    receta@ for ((index,product) in ingredientes.withIndex()){
-        val nuevo_ingrediente: Int? = readLine()?.toInt()
-        when(nuevo_ingrediente){
-            in 1..(ingredientes.size-1) -> {receta_nueva=receta_nueva+ ingredientes.get(nuevo_ingrediente.toString().toInt()-1)+", "
-                println(receta_nueva)
+    val ingredientes = selectIngredients() // devuelve lista de ingredientes
+
+    println("Ingresa el modo de preparación: \n")
+    var instruccions: String = readLine()?:"Receta sin modo de preparacion"
+    if (instruccions.isEmpty()){instruccions="Receta si modo de preparacion"}
+    println("\n\n")
+
+    return Recipe(nombre_receta,ingredientes,instruccions)
+}
+
+fun viewRecipe(recipes:List<Recipe>){
+    menu@while (true){
+        val title="     :: Mis recetas son:\n"
+        println("title")
+
+        if (recipes.isNotEmpty()){
+            for ((index,recipe)in recipes.withIndex()){
+                println("${index+1}.- ${recipe.getRecipeName()}")
             }
-            0 -> { recetas.add(receta_nueva)
-                main()
+
+            println("\nIngresa el numero de receta que quieres ver, o enter para salir")
+            val recipeNum:String = readLine()?:""
+
+            if (recipeNum.equals("")){
+                break@menu
             }
-            !in 1..(ingredientes.size-1) -> {println("Ingrese un dato valido por favor")
-                continue@receta
+            else{
+                try {
+                    recipes.elementAt(recipeNum.toInt()-1).viewRecipe()
+                    println(" ..Pulsa enter para regresar a las recetas")
+                    readLine()
+                }catch (e:Exception){//out of bounds or NumberFormatException
+                    println("\n Respuesta erronea, vuelve a intentarlo\n\n")
+                }
             }
         }
     }
 }
 
-fun viewRecipe(){
-    println("\n Mis recetas son: ")
-    for ((index,product) in recetas.withIndex()){
-        println("${index+1}.- $product")
-    }
-    println("Ingrese cualquier teclado para salir")
-    val texto= readLine()?:0
-    main()
-}

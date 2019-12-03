@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f34ed681-448e-4418-b085-e50acfbac5f3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/model/Ingredient.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/model/Recipe.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/RecipesMaker.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/RecipesMaker.kt" afterDir="false" />
     </list>
